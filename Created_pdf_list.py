@@ -248,6 +248,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
                 file_new_name = self.lineEdit_3.text().split("/")[-1]
                 merge_pdfs(found_files_all, file_new_name, self.spinBox.value(), self)
+                QMessageBox.Information(self, 'Инфо', f'Завершено!')
 
 
 def split_list(lst, num_parts):
@@ -285,6 +286,7 @@ def merge_pdfs(input_paths, output_path, count, self):
 
         # Clear the PdfWriter for the next group
         pdf_writer = PyPDF2.PdfWriter()
+
 
 
 def find_files_in_directory(directory_path, file_list):
