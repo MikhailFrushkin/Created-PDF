@@ -8,7 +8,7 @@ import qdarkstyle
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QProgressBar, QFileDialog, QMessageBox, QApplication
 from loguru import logger
-
+from utils import  ProgressBar
 from config import path_posters
 from created_pdf import one_pdf
 from update_db import scan_files
@@ -261,6 +261,7 @@ def split_list(lst, num_parts):
 def merge_pdfs(input_paths, output_path, count, self):
     pdf_writer = PyPDF2.PdfWriter()
     split_lists = split_list(input_paths, count)
+    progress = ProgressBar(len(input_paths), self, 1)
 
     for group_index, current_group_paths in enumerate(split_lists, start=1):
         for index, input_path in enumerate(current_group_paths, start=1):
@@ -279,6 +280,7 @@ def merge_pdfs(input_paths, output_path, count, self):
                     file.writelines(f'{input_path}\n')
                 QMessageBox.warning(self, 'Ошибка',
                                     f'В файле {input_path} обнаружена ошибка, он удален, нужно пересоздать файл')
+            progress.update_progress()
         # Write the merged pages to the output file with an index
         current_output_path = f"{output_path}_{group_index}.pdf"
         with open(current_output_path, 'wb') as output_file:

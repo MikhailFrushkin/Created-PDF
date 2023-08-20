@@ -10,11 +10,11 @@ from reportlab.lib.pagesizes import A3
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 from tqdm import tqdm
-
+from utils import ProgressBar
 from config import path_posters
 
 
-def compression_pdf(pdf_file_path, output_pdf_path):
+def compression_pdf(pdf_file_path, output_pdf_path, progress):
     logger.debug(f'Сжатие файла {pdf_file_path}')
     pdf_document = fitz.open(pdf_file_path)
     # Параметры сжатия изображений
@@ -58,6 +58,7 @@ def compression_pdf(pdf_file_path, output_pdf_path):
 
             # Удаляем временное изображение
             img_pil.close()
+        progress.update_progress()
 
     # Закрываем PDF-документ
     output_pdf.save()
@@ -72,6 +73,7 @@ def one_pdf(self):
     filename = self.lineEdit_2.text()
     pdf_filename = f'{path_posters}\\{filename}.pdf'
     pdf_filename_out = f'{path_posters}\\{filename}.pdf'
+    progress = ProgressBar(len(self.files) * 2, self)
     if os.path.exists(pdf_filename):
         logger.debug(f'Файл существует: {pdf_filename}')
         QMessageBox.information(self, 'Инфо', f'Файл существует: {pdf_filename}')
@@ -99,12 +101,13 @@ def one_pdf(self):
                 c.drawImage(poster_file, 0, 0, width=A3[0], height=A3[1])
             if i != len(self.files) - 1:
                 c.showPage()
+            progress.update_progress()
         c.save()
         logger.success(f'Создан файл: {pdf_filename}')
 
         if self.checkBox.isChecked():
             try:
-                compression_pdf(pdf_filename, pdf_filename_out)
+                compression_pdf(pdf_filename, pdf_filename_out, progress)
             except Exception as ex:
                 logger.error(ex)
                 logger.error(pdf_filename)
