@@ -230,7 +230,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def evt_btn_created_order(self):
         if self.lineEdit_3.text():
             df = pd.read_excel(self.lineEdit_3.text())
-            df['Артикул продавца'] = df['Артикул продавца'].apply(lambda x: x.lower() + '.pdf')
+            df['Артикул продавца'] = df['Артикул продавца'].apply(lambda x: x.lower())
             art_list2 = df['Артикул продавца'].to_list()
 
             found_files_all, not_found_files = find_files_in_directory(path_posters, art_list2)
@@ -248,7 +248,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
                 file_new_name = self.lineEdit_3.text().split("/")[-1]
                 merge_pdfs(found_files_all, file_new_name, self.spinBox.value(), self)
-                QMessageBox.Information(self, 'Инфо', f'Завершено!')
+                QMessageBox.information(self, 'Инфо', f'Завершено!')
 
 
 def split_list(lst, num_parts):
@@ -290,14 +290,18 @@ def merge_pdfs(input_paths, output_path, count, self):
         pdf_writer = PyPDF2.PdfWriter()
 
 
-
 def find_files_in_directory(directory_path, file_list):
     found_files = []
     not_found_files = []
-    for file_name in file_list:
-        file_path = os.path.join(directory_path, file_name)
-        if os.path.exists(file_path):
-            found_files.append(file_path)
+    for poster in file_list:
+        for file in os.listdir(directory_path):
+
+            if os.path.isfile(os.path.join(directory_path, file)):
+                file_name = '.'.join(file.split('.')[:-1]).lower()
+
+                if poster == file_name:
+                    found_files.append(os.path.join(directory_path, file))
+                    break
         else:
             not_found_files.append(file_name)
 
