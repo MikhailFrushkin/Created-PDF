@@ -232,7 +232,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             df = pd.read_excel(self.lineEdit_3.text())
             df['Артикул продавца'] = df['Артикул продавца'].apply(lambda x: x.lower())
             art_list2 = df['Артикул продавца'].to_list()
-
+            print(art_list2)
             found_files_all, not_found_files = find_files_in_directory(path_posters, art_list2)
             if len(not_found_files) > 0:
                 logger.error(f'Длина найденных артикулов {len(found_files_all)}')
@@ -242,6 +242,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     logger.error(file_name.replace('.pdf', ''))
                 bad_arts_list = "\n".join(not_found_files)
                 QMessageBox.warning(self, 'Ошибка', f'Найдены не все артикула:\n{bad_arts_list}')
+                try:
+                    with open('Ненайденные артикула.txt', 'w') as file:
+                        file.write('\n'.join(not_found_files))
+                except Exception as ex:
+                    logger.error(ex)
             else:
                 logger.success('Все артикула найденны')
                 logger.success(f'Длина найденных артикулов {len(found_files_all)}')
@@ -291,8 +296,9 @@ def merge_pdfs(input_paths, output_path, count, self):
 
 
 def find_files_in_directory(directory_path, file_list):
+    logger.debug('Проверка папки на компьютере ...')
     found_files = []
-    not_found_files = []
+    not_found_files = file_list[:]
     for poster in file_list:
         for file in os.listdir(directory_path):
 
@@ -301,9 +307,8 @@ def find_files_in_directory(directory_path, file_list):
 
                 if poster == file_name:
                     found_files.append(os.path.join(directory_path, file))
+                    not_found_files.remove(poster)
                     break
-        else:
-            not_found_files.append(file_name)
 
     return found_files, not_found_files
 
